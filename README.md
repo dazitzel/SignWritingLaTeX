@@ -57,7 +57,7 @@ I currently have a set of tools to extract and make a glossary, which I will sha
 
 ### Sorting
 
-I have a pair of tools that I use to sort my glossary. I don't follow (yet) follow the official sorting at [SignWriting](http://signwriting.com/), but I haven't totally figured out what type of sort works for me. Perhaps the one at [SignWriting](http://signwriting.com/) will eventually make sense to me?
+I have a pair of tools that I use to sort my glossary. I don't (yet) follow the official sorting at [SignWriting](http://signwriting.com/), but I haven't totally figured out what type of sort works for me. Perhaps the one at [SignWriting](http://signwriting.com/) will eventually make sense to me?
 
 ### Cheetsheet
 
