@@ -10,7 +10,7 @@ So why [ASL University](http://www.lifeprint.com/asl101/lessons/lessons.htm)? In
 
 So why [SignWriting](http://signwriting.com/)? That's a little more involved but the short version is that I tried several writing systems and eventually got to a point where I couldn't record something semantically important, except for SignWriting.
 
-Here's the tools so far (yes I know there's only one, but I have hopes to add to this).
+Here's the tools so far.
 
 ## fswtotex
 
@@ -40,6 +40,12 @@ This program is fairly minimal and assumes that you will place enough LaTeX code
 
 The 7-bit FSW strings have been tested extensively, because that's what I happen to be using. The Unicode FSW strings have not been tested. There's really no excuse for it, I just haven't bothered.
 
+## extractgloss
+
+This tool is not designed to be general purpose. It can be used if you happen to format a SignWritingLaTeX document just right.
+It's purpose is to find the glossary section of each supplement and spit out english/ASL pairs of words.
+
+
 # Building
 
 ```
@@ -51,18 +57,18 @@ I don't install (and you may have noticed that my example call was "./fswtotex .
 
 # Future
 
-### More tools
+## More tools
 
 I currently have a set of tools to extract and make a glossary, which I will share when they are tested a bit more thouroughly.
 
-### Sorting
+## Sorting
 
 I have a pair of tools that I use to sort my glossary. I don't (yet) follow the official sorting at [SignWriting](http://signwriting.com/), but I haven't totally figured out what type of sort works for me. Perhaps the one at [SignWriting](http://signwriting.com/) will eventually make sense to me?
 
-### Cheetsheet
+## Cheetsheet
 
 I have a SignWriting cheatsheet that I consult on occassion. To my benefit, I look at it less and less, but it includes information on sorting so I'm not ready to share it yet either.
 
-### Supplements
+## Supplements
 
 My current focus is supplements for lessons 1-15. I've settled down on the idea that you should understand the writing system within a semester. I'm still working on the exact order of presentation (sorting again), but I plan to place these up here as well.
