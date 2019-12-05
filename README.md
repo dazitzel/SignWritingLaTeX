@@ -43,8 +43,12 @@ The 7-bit FSW strings have been tested extensively, because that's what I happen
 ## extractgloss
 
 This tool is not designed to be general purpose. It can be used if you happen to format a SignWritingLaTeX document just right.
-It's purpose is to find the glossary section of each supplement and spit out english/ASL pairs of words.
+It's purpose is to find the glossary section of each supplement and spit out English/ASL pairs of words.
 
+
+## sortenu
+
+This tool is just a shade more general purpose. It expects pairs of lines with English/ASL pairs of words. It also assumes that the ASL words are in the middle lane and transforms them into horizontal words since the expected use is in an English list.
 
 # Building
 
