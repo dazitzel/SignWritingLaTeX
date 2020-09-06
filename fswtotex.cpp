@@ -586,6 +586,8 @@ int usage()
     cout<<"                  allows for insertion of SignWriting in the midst of English text but"<<endl;
     cout<<"                  does require the author to handle things like placing the text into"<<endl;
     cout<<"                  a multi-column environment and adding linebreaks after each word."<<endl;
+    cout<<"--spelling        By default, we don't spell. If this option is added then columns of"<<endl;
+    cout<<"                  of symbols will appear above the word if it has a time domain prefix."<<endl;
     return 0;
 }
 
@@ -596,6 +598,7 @@ string fsize=defaultfsize;
 bool hasat=true;
 bool mirror=true;
 int rotation=-90;
+bool spelling=false;
 
 int main(int argc,char**argv)
 {
@@ -640,6 +643,10 @@ int main(int argc,char**argv)
                 return result;
             }
             rotation = atoi(argv[i]);
+        }
+        else if(string(argv[i])=="--spelling")
+        {
+            spelling=true;
         }
         else if(argv[i][0]=='-')
         {
@@ -1177,6 +1184,8 @@ void prefix_symbol_second         (ostream *fileOut, uint32_t c)
     {
         if(c>='0' && c<='8')
         { line.push_back(c); subsubstate=s_third; }
+        else if(c=='f')
+        { line.push_back(c); subsubstate=s_third; }
         else
             sendOut(fileOut,line,c);
     }
@@ -1200,9 +1209,16 @@ void prefix_symbol_third          (ostream *fileOut, uint32_t c)
             else
                 sendOut(fileOut,line,c);
         }
-        else
+        else if(line[line.size()-1]=='8')
         {
             if((c>='0'&&c<='9') || (c>='a'&&c<='b'))
+            { line.push_back(c); subsubstate=s_fill; }
+            else
+                sendOut(fileOut,line,c);
+        }
+        else // =='f'
+        {
+            if(c=='f')
             { line.push_back(c); subsubstate=s_fill; }
             else
                 sendOut(fileOut,line,c);
@@ -1508,6 +1524,7 @@ void visual_placement_thirdh      (ostream *fileOut, uint32_t c)
 
 void visual_placement_end         (ostream *fileOut, uint32_t c)
 {
+    vector< vector< uint32_t > > sorting;
     if(c=='S')
     { line.push_back(c); substate=s_symbol; subsubstate=s_first; }
     else if(c>=0x40001 && c<=0x4f428)
@@ -1522,8 +1539,49 @@ void visual_placement_end         (ostream *fileOut, uint32_t c)
              place++;
              while(line[place]=='S' || (line[place]>=0x40001 && line[place]<=0x4f428))
              {
-                 if(line[place]=='S') place+=6;
-                 else                 place++;
+                 int s=0;
+                 if(line[place]=='S')
+                 {
+                     place++;
+                     s=(line[place]-'0')*256;
+                     if(line[place+1]>='0' && line[place+1]<='9')
+                         s+=(line[place+1]-'0')*16;
+                     else // if(line[place+1]>='a' && line[place+1]<='f')
+                         s+=(line[place+1]-'a'+10)*16;
+                     if(line[place+2]>='0' && line[place+2]<='9')
+                         s+=(line[place+2]-'0')*1;
+                     else // if(line[place+2]>='a' && line[place+2]<='f')
+                         s+=(line[place+2]-'a'+10)*1;
+                     place+=3;
+                     s-=0x100;
+                     s*=(6*16);
+                     s+=(line[place]-'0')*16;
+                     place++;
+                     if(line[place]>='0' && line[place]<='9')
+                         s+=(line[place]-'0');
+                     else // if(line[place+1]>='a' && line[place+1]<='f')
+                         s+=(line[place]-'a'+10);
+                     place++;
+                 }
+                 else // if(line[place]>=0x40001 && line[place]<=0x4f428)
+                 {
+                     s=line[place]-0x40001;
+                     place++;
+                 }
+                 if(s==(0x3ff-0x100)*(6*16))
+                 {
+                     sorting.resize(sorting.size()+1);
+                 }
+                 else
+                 {
+                     if(sorting.size()==0)
+                         sorting.resize(sorting.size()+1);
+                     sorting[sorting.size()-1].resize(sorting[sorting.size()-1].size()+1);
+                     //for(int i=sorting[sorting.size()-1].size()-1;i>0;i--)
+                     //    sorting[sorting.size()-1][i]=sorting[sorting.size()-1][i-1];
+                     //sorting[sorting.size()-1][0] = s;
+                     sorting[sorting.size()-1][sorting[sorting.size()-1].size()-1] = s;
+                 }
              }
         }
         if(line[place]=='B' || line[place]==0x1d801)
@@ -1578,6 +1636,38 @@ void visual_placement_end         (ostream *fileOut, uint32_t c)
         // rectangle around the expected corner.
         if(lane != 'B')
             (*fileOut)<<"\\draw[white](\\"<<fsize<<"/30*-90 pt,\\"<<fsize<<"/30*-12 pt)rectangle(\\"<<fsize<<"/30*110 pt,\\"<<fsize<<"/30*-10 pt);";
+        if(spelling)
+        {
+            int maxsize=0;
+            for(int x=0;x<sorting.size();x++)
+            {
+                if(sorting[x].size() > maxsize)
+                    maxsize = sorting[x].size();
+            }
+            for(int x=0;x<sorting.size();x++)
+            {
+                for(int y=0;y<sorting[x].size();y++)
+                {
+                    (*fileOut)<<"\\begin{scope}[xshift="<<(x*12-7*static_cast<int>(sorting.size()-1)-(1*static_cast<int>(sorting.size()%2)))<<"pt, yshift="<<((maxsize-y-2)*12+18)<<"pt]";
+                    (*fileOut)<<"\\draw(0,0) rectangle (12pt,12pt);";
+                    (*fileOut)<<"\\draw(0,13pt) node [";
+                    if(mirror==true)
+                        (*fileOut)<<"xscale=-1";
+                    if((mirror==true) && (rotation!=0))
+                        (*fileOut)<<",";
+                    if(rotation!=0)
+                        (*fileOut)<<"rotate="<<rotation;
+                    if((rotation!=0) || (mirror==true))
+                        (*fileOut)<<",";
+                    (*fileOut)<<"anchor=north west] {\\swline";
+                    (*fileOut)<<"\\fontsize{6pt}{6pt}\\selectfont";
+                    (*fileOut)<<"\\char";
+                    (*fileOut)<<(0xf0001+sorting[x][y]);
+                    (*fileOut)<<"};";
+                    (*fileOut)<<"\\end{scope}";
+                }
+            }
+        }
         while(place<line.size())
         {
             int s;
